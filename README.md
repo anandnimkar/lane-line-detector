@@ -16,90 +16,92 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
-
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+[image1]: ./output_images/chessboard_corners.png "Chessboard Corners Identified"
+[image2]: ./output_images/undistorted_chessboard.png "Chessboard Undistorted"
+[image3]: ./output_images/undistorted_lane.png "Road Image Undistorted"
+[image4]: ./output_images/gradient_and_thresholded.jpg "Gradient and Threshold Example"
+[image5]: ./output_images/warped.png "Warp Example"
+[image6]: ./output_images/polyfit_lines.png "Fit Visual"
+[image7]: ./output_images/pipeline_output.png "Output"
+[video1]: ./output_videos/out_project_video.mp4 "Video"
 
 ---
-###Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+###Note: The code for each step below is included within the equally named sections in pipeline.ipynb
 
-You're reading it!
 ###Camera Calibration
 
-####1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+####1. Computing the camera matrix and distortion coefficients
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+Steps followed:
+* read in all calibration images
+* generate object points, which are points (x, y, z=0)  that will map to the image points detected for each corner
+* generate image points by detecting corners using `cv2.findChessboardCorners`
+* obtain the camera matrix `mtx` and distortion coefficients `dist` for the camera after calibration using `cv2.calibrateCamera`
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
-
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+Below is an example of the annotated output of detected chessboard corners (image points): 
 
 ![alt text][image1]
 
+
 ###Pipeline (single images)
 
-####1. Provide an example of a distortion-corrected image.
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
+####1. Examples of distortion-corrected images.
+
+Below is an example of a chessboard image undistorted using `cv2.undistort` and the camera matrix and distortion coefficients calculated
+
 ![alt text][image2]
-####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+
+Below is an example of a road image undistorted using `cv2.undistort` and the camera matrix and distortion coefficients calculated
 
 ![alt text][image3]
 
-####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+####2. Using color transforms and gradients to create a thresholded binary image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+Steps followed:
+* convert color space to HLS
+* Sobel x gradient threshold on the l channel and return values between a threshold
+* Threshold S color channel
+* Combine the Sobel x and S color channels into a binary thresholded image
+* The values finally chosen type of gradient and threshold values was determined using trial and error
 
-```
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-
-```
-This resulted in the following source and destination points:
-
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
-
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
-
-![alt text][image4]
-
-####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
-
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Below is an example of a thresholded binary image following the approach above: 
 
 ![alt text][image5]
 
-####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+####3. Perspective transforms
 
-I did this in lines # through # in my code in `my_other_file.py`
+Steps followed:
+* Within function `transform` use `cv2.getPerspectiveTransform` and `cv2.warpPerspective` to generate the warped image and transformation matrix `M`
+* source (`src`) and destination (`dst`) were identified for the images using trial and error to find the best values that generated parallel lines for road images of straight lane lines. These values are hard-coded.
+* In the full Image Pipeline at the bottom of './pipeline.ipynb', a region of interest is also cropped after gradient thresholding and before warping.
 
-####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+Below is an example of a transformed image without thresholding to demonstrate the effects of warping.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+![alt text][image5]
+
+####4. Identification of lane-line pixels and fitting their positions with a polynomial
+
+Steps followed:
+* In the Image Pipline at the bottom of './pipeline.ipynb', lane pixels were identified using a sliding window histogram. The "sliding window histogram" technique involves dividing the input binary-warped image into two halves and the image height into `n` windows. For each half, starting from the bottom of the image, sum the individual pixel values (all 255) for each x value to determine the histogram. Then find the argmax of the histogram and we have the start of the lane. The next step would be to move one window vertically up and search within some margin around that window using the same technique.
+* Instead of always using the sliding window histogram technique, when prior line detections existed from the previous frame, then we searched around a horizontal margin from the previous fitted polynomial line for each of the left and right lanes.
+* Once the lane pixels were identified using one of the two techniques above, a polynomial line was fit to the resulting pixels.
+
+Below is an example of the left and right pixels (blue and red respectively) and the poynomial line in yellow annotated to a binary-warped image.
 
 ![alt text][image6]
+
+####5. Radius of curvature of the lane and the position of the vehicle with respect to center.
+
+In the Image Pipline at the bottom of './pipeline.ipynb', curvature and vehicle position offset from centre were calculated with the `set_curvature` and `set_base_pos` methods of the `Line` class. Additionally, averaging and aggregating of the values for each `Line` instance was performed in the `Pipeline` class in the method `process_frame` as per the code comments.
+
+Curvature and Vehicle Position are expressed in meters. 
+
+####6. Example image of result plotted back down onto the road such that the lane area is identified clearly.
+
+Refer to the Image Pipline at the bottom of './pipeline.ipynb' for the implemention of the pipeline and `process_image` method.
+
+![alt text][image7]
 
 ---
 
@@ -107,12 +109,19 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./output_videos/out_project_video.mp4)
 
 ---
 
 ###Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+####1. Problems / issues faced in this implementation. Where this will pipeline likely fail. To-dos to make it more robust.
+* This pipeline depends heavily on color and binary thresholding techniques to isolate lane lines in an input image. For a common set of road conditions like those specified in `./test_images` or `./input_videos/project_video.mp4`, a specific set of gradient, color space, and thresholds techniques may work, but these quickly fall apart on the harder videos in the `./input_videos` directory. This is because a different set of techniques would be better optimized for those videos. Furthermore, a lot of trial and error was required to identify and adjust the parameters and techniques used to one set of road conditions. Therefore, I think this approach does not generalize well and to the real world.
+  * Instead, a deep learning approach should be used that would likely work better to identify what a lane is. After all, our eyes do not see in binary thresholded warped images of the lane ahead of us, and we are still able to understand the concept of a lane. A good brain in front of a normal camera should be enough to identify lane lines and any other road condition.
+* Further to the point above, if another car or obstacle presents itself in front of the camera, the identified techniques would almost certainly stop working and cause lane lines to scramble or lose detection.
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further. 
+To-dos
+* The image pipeline at at the bottom of ./pipeline.ipynb can benefit from some additional validation checks between the left and right lanes, for example checking that the lines are parallel, checking that the distance between them is consistent, and checking that the calculated curvature is within expected limits. If any of these validation checks fail, we can discard the detection by calling the `discard_last_detection` method of the `Line` instances representing the left and right lanes. This uses the average of the previous n valid detections as the project lane line.
+* Optimization algorithms and genetic techniques may be able to create a set of thresholding parameters that generalize well to all the input videos.
+
+

@@ -19,7 +19,7 @@ The goals / steps of this project are the following:
 [image1]: ./output_images/chessboard_corners.png "Chessboard Corners Identified"
 [image2]: ./output_images/undistorted_chessboard.png "Chessboard Undistorted"
 [image3]: ./output_images/undistorted_lane.png "Road Image Undistorted"
-[image4]: ./output_images/gradient_and_thresholded.jpg "Gradient and Threshold Example"
+[image4]: ./output_images/gradient_and_thresholded.png "Gradient and Threshold Example"
 [image5]: ./output_images/warped.png "Warp Example"
 [image6]: ./output_images/polyfit_lanes.png "Fit Visual"
 [image7]: ./output_images/pipeline_output.png "Output"

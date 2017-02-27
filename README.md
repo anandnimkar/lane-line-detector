@@ -21,7 +21,7 @@ The goals / steps of this project are the following:
 [image3]: ./output_images/undistorted_lane.png "Road Image Undistorted"
 [image4]: ./output_images/gradient_and_thresholded.jpg "Gradient and Threshold Example"
 [image5]: ./output_images/warped.png "Warp Example"
-[image6]: ./output_images/polyfit_lines.png "Fit Visual"
+[image6]: ./output_images/polyfit_lanes.png "Fit Visual"
 [image7]: ./output_images/pipeline_output.png "Output"
 [video1]: ./output_videos/out_project_video.mp4 "Video"
 
@@ -67,7 +67,7 @@ Steps followed:
 
 Below is an example of a thresholded binary image following the approach above: 
 
-![alt text][image5]
+![alt text][image4]
 
 ####3. Perspective transforms
 
@@ -107,7 +107,7 @@ Refer to the Image Pipline at the bottom of './pipeline.ipynb' for the implement
 
 ###Pipeline (video)
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+####Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 Here's a [link to my video result](./output_videos/out_project_video.mp4)
 
@@ -115,7 +115,7 @@ Here's a [link to my video result](./output_videos/out_project_video.mp4)
 
 ###Discussion
 
-####1. Problems / issues faced in this implementation. Where this will pipeline likely fail. To-dos to make it more robust.
+####Problems / issues faced in this implementation. Where this will pipeline likely fail. To-dos to make it more robust.
 * This pipeline depends heavily on color and binary thresholding techniques to isolate lane lines in an input image. For a common set of road conditions like those specified in `./test_images` or `./input_videos/project_video.mp4`, a specific set of gradient, color space, and thresholds techniques may work, but these quickly fall apart on the harder videos in the `./input_videos` directory. This is because a different set of techniques would be better optimized for those videos. Furthermore, a lot of trial and error was required to identify and adjust the parameters and techniques used to one set of road conditions. Therefore, I think this approach does not generalize well and to the real world.
   * Instead, a deep learning approach should be used that would likely work better to identify what a lane is. After all, our eyes do not see in binary thresholded warped images of the lane ahead of us, and we are still able to understand the concept of a lane. A good brain in front of a normal camera should be enough to identify lane lines and any other road condition.
 * Further to the point above, if another car or obstacle presents itself in front of the camera, the identified techniques would almost certainly stop working and cause lane lines to scramble or lose detection.
